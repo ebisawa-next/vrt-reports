@@ -29,3 +29,22 @@ jobs:
         name: playwright-report
         path: playwright-report/
         retention-days: 1
+
+  post_comment:
+    needs: build_and_upload
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create artifact URL
+        id: create_url
+        run: echo "artifact_url=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ steps.upload-artifact.outputs.artifact-name }}" >> $GITHUB_ENV
+
+      - name: Post comment on PR
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            Visual Regression Test を実行しました。結果は [ここ](${{ env.artifact_url }}) からダウンロードできます。
