@@ -6,14 +6,19 @@ on:
 jobs:
   visual_regression:
     # ラベル「VisualRegression」と EE 生成完了の PR comment を参照する
-    if: contains(github.event.pull_request.labels.*.name, 'VisualRegression') == true && ${{ github.event.issue.pull_request }} && contains(github.event.comment.html_url, '/pull/' && startsWith(github.event.comment.body, 'お寿司')
+    # contains(github.event.pull_request.labels.*.name, 'VisualRegression') == true
+    if: contains(github.event.pull_request.labels.*.name, 'VisualRegression') && contains(github.event.comment.html_url, '/pull/' && startsWith(github.event.comment.body, 'お寿司')
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+      with:
+        ref: feature/sushi
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
+    - name: echo
+      run: echo ${{ github.event.pull_request.labels.*.name }}
     - name: Install dependencies
       run: npm ci
     - name: Install Playwright Browsers
@@ -25,4 +30,4 @@ jobs:
       with:
         name: playwright-report
         path: playwright-report/
-        retention-days: 30
+        retention-days: 1
