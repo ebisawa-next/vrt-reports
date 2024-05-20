@@ -9,7 +9,7 @@ jobs:
     # contains(github.event.pull_request.labels.*.name, 'VisualRegression') == true
     if: |
       github.event.issue.pull_request != null &&
-      contains(github.event.issue.labels.*.name, 'お寿司') &&
+      contains(github.event.issue.labels.*.name, 'VisualRegression') &&
       startsWith(github.event.comment.body, 'まぐろ')
     timeout-minutes: 60
     runs-on: ubuntu-latest
