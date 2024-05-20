@@ -1,0 +1,24 @@
+{
+  "name": "vrt-reports",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ebisawa-next/vrt-reports.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ebisawa-next/vrt-reports/issues"
+  },
+  "homepage": "https://github.com/ebisawa-next/vrt-reports#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "@types/node": "^20.12.12"
+  },
+  "volta": {
+    "node": "22.2.0"
+  }
+}
