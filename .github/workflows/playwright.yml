@@ -7,8 +7,6 @@ jobs:
   visual_regression:
     # ラベル「VisualRegression」と EE 生成完了の PR comment を参照する
     if: contains(github.event.pull_request.labels.*.name, 'VisualRegression') == true && ${{ github.event.issue.pull_request }} && contains(github.event.comment.html_url, '/pull/' && startsWith(github.event.comment.body, 'お寿司')
-jobs:
-  test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
