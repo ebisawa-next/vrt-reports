@@ -65,26 +65,59 @@ jobs:
         id: create_url
         run: echo "artifact_url=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ needs.build_and_upload.outputs.artifact_id }}" >> $GITHUB_ENV
 
-      # アーティファクトを github page へデプロイする
-      - name: deploy report to github page
-        uses: peaceiris/actions-gh-pages@v3
+      # # アーティファクトを github page へデプロイする
+      # - name: deploy report to github page
+      #   uses: peaceiris/actions-gh-pages@v3
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     publish_dir: playwright-report/
+      #     destination_dir: ${{ github.head_ref  }} # PR毎にディレクトリを分けることで上書きを防ぐ
+
+      - name: Get Pull Request number
+        id: get_pr
+        run: echo "::set-output name=pr_number::$(echo ${{ github.event.issue.number }})"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: playwright-report/
-          destination_dir: ${{ github.head_ref  }} # PR毎にディレクトリを分けることで上書きを防ぐ
+          name: pr-${{ steps.get_pr.outputs.pr_number }}
+          path: ./reports
+
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: pr-${{ steps.get_pr.outputs.pr_number }}
+          path: ./reports
+
+      - name: Deploy to GitHub Pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # GitHub Pages用にビルドしたアーティファクトをデプロイするコマンド
+          mkdir -p ./gh-pages/pr-${{ steps.get_pr.outputs.pr_number }}
+          cp -r ./reports/* ./gh-pages/pr-${{ steps.get_pr.outputs.pr_number }}/
+          cd gh-pages
+
+          git init
+          git config user.name '${{ github.actor }}'
+          git config user.email '${{ github.actor }}@users.noreply.github.com'
+          git add .
+          git commit -m "Deploy PR ${steps.get_pr.outputs.pr_number} artifacts"
+          git push --force https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git master:gh-pages
+
 
       - name: find comment
         uses: peter-evans/find-comment@v2
         id: fc
         with:
-          issue-number: 2 # ${{ github.event.pull_request.number }}
+          issue-number: ${{ github.event.issue.number }}
           comment-author: 'github-actions[bot]'
           body-includes: reg-suit report
 
       - name: upsert comment
         uses: peter-evans/create-or-update-comment@v3
         with:
-          issue-number: 2 # ${{ github.event.pull_request.number }}
+          issue-number: ${{ github.event.issue.number }}
           body: |
             reg-suit report
             https://ebisawa-next.github.io/vrt-reports/${{github.head_ref}}
@@ -95,7 +128,7 @@ jobs:
       #   with:
       #     token: ${{ secrets.GITHUB_TOKEN }}
       #     repository: ${{ github.repository }}
-      #     issue-number: ${{ github.event.pull_request.number }}
+      #     issue-number: ${{ github.event.issue.number }}
       #     body: |
       #       アーティファクトは [ここ](${{ env.artifact_url }}) からダウンロードできます。
 
