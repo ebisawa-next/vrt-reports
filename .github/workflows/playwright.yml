@@ -58,10 +58,6 @@ jobs:
         name: pr-${{ steps.get_pr.outputs.pr_number }}
         path: ./playwright-report
 
-    # - name: Create artifact URL
-    #   id: create_url
-    #   run: echo "artifact_url=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ needs.build_and_upload.outputs.artifact_id }}" >> $GITHUB_ENV
-
     # # アーティファクトを github page へデプロイする
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
@@ -71,19 +67,10 @@ jobs:
         publish_branch: gh-pages
         destination_dir: pr-${{ steps.get_pr.outputs.pr_number }}
 
-    - name: find comment
-      uses: peter-evans/find-comment@v2
-      id: fc
-      with:
-        issue-number: ${{ steps.get_pr.outputs.pr_number }}
-        comment-author: 'github-actions[bot]'
-        body-includes: reg-suit report
-
-    - name: upsert comment
+    - name: post comment
       uses: peter-evans/create-or-update-comment@v3
       with:
         issue-number: ${{ steps.get_pr.outputs.pr_number }}
         body: |
           reg-suit report
           https://ebisawa-next.github.io/vrt-reports/pr-${{ steps.get_pr.outputs.pr_number }}/
-        edit-mode: replace
