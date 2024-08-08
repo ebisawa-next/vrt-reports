@@ -17,7 +17,7 @@ jobs:
     steps:
     - name: Get Pull Request number
       id: get_pr
-      run: echo "::set-output name=pr_number::$(echo ${{ github.event.issue.number }})"
+      run: echo "pr_number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       with:
