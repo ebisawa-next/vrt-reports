@@ -58,29 +58,9 @@ jobs:
         name: pr-${{ steps.get_pr.outputs.pr_number }}
         path: ./playwright-report
 
-    # # アーティファクトを出力
-    # - uses: actions/upload-artifact@v4
-    #   if: always()
-    #   with:
-    #     name: playwright-report
-    #     path: playwright-report/
-    #     retention-days: 1
-    # - name: Get Artifact ID
-    #   id: get_artifact_id
-    #   run: echo "::set-output name=artifact_id::${{ steps.upload_artifact.outputs.artifact_id }}"
-
-
-  # post_comment:
-  #   runs-on: ubuntu-latest
-  #   needs: visual_regression
-  #   steps:
-
-    # - name: Checkout repository
-    #   uses: actions/checkout@v4
-
-    - name: Create artifact URL
-      id: create_url
-      run: echo "artifact_url=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ needs.build_and_upload.outputs.artifact_id }}" >> $GITHUB_ENV
+    # - name: Create artifact URL
+    #   id: create_url
+    #   run: echo "artifact_url=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ needs.build_and_upload.outputs.artifact_id }}" >> $GITHUB_ENV
 
     # # アーティファクトを github page へデプロイする
     - name: Deploy to GitHub Pages
@@ -91,58 +71,19 @@ jobs:
         publish_branch: gh-pages
         destination_dir: pr-${{ steps.get_pr.outputs.pr_number }}
 
-
-    # - name: Upload artifact
-    #   uses: actions/upload-artifact@v2
-    #   with:
-    #     name: pr-${{ steps.get_pr.outputs.pr_number }}
-    #     path: ./reports
-
-    # - name: Download artifact
-    #   uses: actions/download-artifact@v2
-    #   with:
-    #     name: pr-${{ steps.get_pr.outputs.pr_number }}
-    #     path: ./reports
-
-    # - name: Deploy to GitHub Pages
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   run: |
-    #     # GitHub Pages用にプレイライトのレポートをデプロイするコマンド
-    #     mkdir -p ./gh-pages/pr-${{ steps.get_pr.outputs.pr_number }}
-    #     cp -r ./playwright-report/* ./gh-pages/pr-${{ steps.get_pr.outputs.pr_number }}/
-    #     cd gh-pages
-
-    #     git init
-    #     git config user.name '${{ github.actor }}'
-    #     git config user.email '${{ github.actor }}@users.noreply.github.com'
-    #     git add .
-    #     git commit -m "Deploy PR ${steps.get_pr.outputs.pr_number} Playwright report"
-    #     git push --force https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git main:gh-pages
-
     - name: find comment
       uses: peter-evans/find-comment@v2
       id: fc
       with:
-        issue-number: ${{ github.event.issue.number }}
+        issue-number: ${{ steps.get_pr.outputs.pr_number }}
         comment-author: 'github-actions[bot]'
         body-includes: reg-suit report
 
     - name: upsert comment
       uses: peter-evans/create-or-update-comment@v3
       with:
-        issue-number: ${{ github.event.issue.number }}
+        issue-number: ${{ steps.get_pr.outputs.pr_number }}
         body: |
           reg-suit report
-          https://ebisawa-next.github.io/vrt-reports/${{github.head_ref}}
+          https://ebisawa-next.github.io/vrt-reports/pr-${{ steps.get_pr.outputs.pr_number }}/
         edit-mode: replace
-
-      # - name: Post comment on PR
-      #   uses: peter-evans/create-or-update-comment@v2
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     repository: ${{ github.repository }}
-      #     issue-number: ${{ github.event.issue.number }}
-      #     body: |
-      #       アーティファクトは [ここ](${{ env.artifact_url }}) からダウンロードできます。
-
