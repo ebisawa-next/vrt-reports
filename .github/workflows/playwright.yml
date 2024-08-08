@@ -73,13 +73,13 @@ jobs:
           publish_dir: playwright-report/
           destination_dir: ${{ github.head_ref  }} # PR毎にディレクトリを分けることで上書きを防ぐ
 
-      - name: find comment
-        uses: peter-evans/find-comment@v2
-        id: fc
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
-          body-includes: reg-suit report
+      # - name: find comment
+      #   uses: peter-evans/find-comment@v2
+      #   id: fc
+      #   with:
+      #     issue-number: ${{ github.event.pull_request.number }}
+      #     comment-author: 'github-actions[bot]'
+      #     body-includes: reg-suit report
 
       - name: upsert comment
         uses: peter-evans/create-or-update-comment@v3
