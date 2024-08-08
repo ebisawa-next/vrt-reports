@@ -84,12 +84,11 @@ jobs:
       - name: upsert comment
         uses: peter-evans/create-or-update-comment@v3
         with:
-          comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             reg-suit report
             https://ebisawa-next.github.io/vrt-reports/${{github.head_ref}}
-          edit-mode: replace
+          # edit-mode: replace
 
       # - name: Post comment on PR
       #   uses: peter-evans/create-or-update-comment@v2
