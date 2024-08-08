@@ -83,12 +83,13 @@ jobs:
       run: echo "artifact_url=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ needs.build_and_upload.outputs.artifact_id }}" >> $GITHUB_ENV
 
     # # アーティファクトを github page へデプロイする
-    # - name: deploy report to github page
-    #   uses: peaceiris/actions-gh-pages@v3
-    #   with:
-    #     github_token: ${{ secrets.GITHUB_TOKEN }}
-    #     publish_dir: playwright-report/
-    #     destination_dir: ${{ github.head_ref  }} # PR毎にディレクトリを分けることで上書きを防ぐ
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./playwright-report
+        publish_branch: gh-pages
+        destination_dir: pr-${{ steps.get_pr.outputs.pr_number }}
 
 
     # - name: Upload artifact
@@ -103,21 +104,21 @@ jobs:
     #     name: pr-${{ steps.get_pr.outputs.pr_number }}
     #     path: ./reports
 
-    - name: Deploy to GitHub Pages
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        # GitHub Pages用にプレイライトのレポートをデプロイするコマンド
-        mkdir -p ./gh-pages/pr-${{ steps.get_pr.outputs.pr_number }}
-        cp -r ./playwright-report/* ./gh-pages/pr-${{ steps.get_pr.outputs.pr_number }}/
-        cd gh-pages
+    # - name: Deploy to GitHub Pages
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   run: |
+    #     # GitHub Pages用にプレイライトのレポートをデプロイするコマンド
+    #     mkdir -p ./gh-pages/pr-${{ steps.get_pr.outputs.pr_number }}
+    #     cp -r ./playwright-report/* ./gh-pages/pr-${{ steps.get_pr.outputs.pr_number }}/
+    #     cd gh-pages
 
-        git init
-        git config user.name '${{ github.actor }}'
-        git config user.email '${{ github.actor }}@users.noreply.github.com'
-        git add .
-        git commit -m "Deploy PR ${steps.get_pr.outputs.pr_number} Playwright report"
-        git push --force https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git main:gh-pages
+    #     git init
+    #     git config user.name '${{ github.actor }}'
+    #     git config user.email '${{ github.actor }}@users.noreply.github.com'
+    #     git add .
+    #     git commit -m "Deploy PR ${steps.get_pr.outputs.pr_number} Playwright report"
+    #     git push --force https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git main:gh-pages
 
     - name: find comment
       uses: peter-evans/find-comment@v2
