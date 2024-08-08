@@ -21,10 +21,28 @@ jobs:
         node-version: lts/*
     - name: Install dependencies
       run: npm ci
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+
+    # playwright の install && cache
+    - name: Get installed Playwright version
+      id: playwright-version
+      run: echo "PLAYWRIGHT_VERSION=$(node -e "console.log(require('./package-lock.json').packages['node_modules/@playwright/test'].version)")" >> $GITHUB_ENV
+    - name: Cache playwright binaries
+      uses: actions/cache@v3
+      id: playwright-cache
+      with:
+        path: |
+          ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
+    - run: npx playwright install --with-deps
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
+    - run: npx playwright install-deps
+      if: steps.playwright-cache.outputs.cache-hit == 'true'
+
+    # テスト実行
     - name: Run Playwright tests
       run: npx playwright test
+
+    # アーティファクトを出力
     - uses: actions/upload-artifact@v4
       if: always()
       with:
@@ -47,11 +65,38 @@ jobs:
         id: create_url
         run: echo "artifact_url=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ needs.build_and_upload.outputs.artifact_id }}" >> $GITHUB_ENV
 
-      - name: Post comment on PR
-        uses: peter-evans/create-or-update-comment@v2
+      # アーティファクトを github page へデプロイする
+      - name: deploy report to github page
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: playwright-report/
+          destination_dir: ${{ github.head_ref  }} # PR毎にディレクトリを分けることで上書きを防ぐ
+
+      - name: find comment
+        uses: peter-evans/find-comment@v2
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: reg-suit report
+
+      - name: upsert comment
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            アーティファクトは [ここ](${{ env.artifact_url }}) からダウンロードできます。
+            reg-suit report
+            https://ebisawa-next.github.io/vrt-reports/${{github.head_ref}}
+          edit-mode: replace
+
+      # - name: Post comment on PR
+      #   uses: peter-evans/create-or-update-comment@v2
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     repository: ${{ github.repository }}
+      #     issue-number: ${{ github.event.pull_request.number }}
+      #     body: |
+      #       アーティファクトは [ここ](${{ env.artifact_url }}) からダウンロードできます。
+
