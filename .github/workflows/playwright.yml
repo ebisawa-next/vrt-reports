@@ -67,10 +67,23 @@ jobs:
         publish_branch: gh-pages
         destination_dir: pr-${{ steps.get_pr.outputs.pr_number }}
 
-    - name: post comment
-      uses: peter-evans/create-or-update-comment@v4
+    - name: Post comment
+      uses: actions/github-script@v6
       with:
-        issue-number: ${{ steps.get_pr.outputs.pr_number }}
-        body: |
-          reg-suit report
-          https://ebisawa-next.github.io/vrt-reports/pr-${{ steps.get_pr.outputs.pr_number }}/
+        script: |
+          const prNumber = ${{ steps.get_pr.outputs.pr_number }};
+          const body = `reg-suit report\nhttps://ebisawa-next.github.io/vrt-reports/pr-${prNumber}/`;
+          
+          const { data: comment } = await github.issues.createComment({
+            ...context.repo,
+            issue_number: prNumber,
+            body: body
+          });
+
+    # - name: post comment
+    #   uses: peter-evans/create-or-update-comment@v4
+    #   with:
+    #     issue-number: ${{ steps.get_pr.outputs.pr_number }}
+    #     body: |
+    #       reg-suit report
+    #       https://ebisawa-next.github.io/vrt-reports/pr-${{ steps.get_pr.outputs.pr_number }}/
