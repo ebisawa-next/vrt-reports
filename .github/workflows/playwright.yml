@@ -74,8 +74,9 @@ jobs:
           const prNumber = ${{ steps.get_pr.outputs.pr_number }};
           const body = `reg-suit report\nhttps://ebisawa-next.github.io/vrt-reports/pr-${prNumber}/`;
           
-          const { data: comment } = await github.issues.createComment({
-            ...context.repo,
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
             issue_number: prNumber,
             body: body
           });
