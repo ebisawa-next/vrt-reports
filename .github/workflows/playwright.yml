@@ -58,9 +58,9 @@ jobs:
         name: pr-${{ steps.get_pr.outputs.pr_number }}
         path: ./playwright-report
 
-    # # アーティファクトを github page へデプロイする
+    # Artifact を github page へデプロイする
     - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v4
+      uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./playwright-report
@@ -80,11 +80,3 @@ jobs:
             issue_number: prNumber,
             body: body
           });
-
-    # - name: post comment
-    #   uses: peter-evans/create-or-update-comment@v4
-    #   with:
-    #     issue-number: ${{ steps.get_pr.outputs.pr_number }}
-    #     body: |
-    #       reg-suit report
-    #       https://ebisawa-next.github.io/vrt-reports/pr-${{ steps.get_pr.outputs.pr_number }}/
